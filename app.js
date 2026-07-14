@@ -1,3 +1,31 @@
+// Firebase Configuration - Replace with your own keys to enable cloud sync
+const firebaseConfig = {
+    apiKey: "AIzaSyC7hl1xr_OGT7cYk9DWKfxbYcwgOkzJliM",
+    authDomain: "rentifly-kota.firebaseapp.com",
+    databaseURL: "https://rentifly-kota-default-rtdb.firebaseio.com",
+    projectId: "rentifly-kota",
+    storageBucket: "rentifly-kota.firebasestorage.app",
+    messagingSenderId: "713852680523",
+    appId: "1:713852680523:web:8dbcf31ce45582807910ce"
+};
+
+let db = null;
+let isFirebaseActive = false;
+
+// Check if Firebase settings have been customized
+if (firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.apiKey.trim() !== "") {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        isFirebaseActive = true;
+        console.log("Firebase Realtime Database initialized successfully.");
+    } catch (error) {
+        console.error("Failed to initialize Firebase:", error);
+    }
+} else {
+    console.log("Firebase Config is set to default placeholders. Running in offline mode using localStorage.");
+}
+
 // Core Application State
 let state = {
     bikes: [],
@@ -154,7 +182,44 @@ function getBikeSVG(type, status) {
 }
 
 // State Persistence Utilities
+let isListenerBound = false;
+function setupFirebaseListener() {
+    if (!isFirebaseActive || !db || isListenerBound) return;
+    isListenerBound = true;
+    
+    db.ref("rentifly_state").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data && Array.isArray(data.bikes) && Array.isArray(data.rentals)) {
+            state = data;
+            localStorage.setItem("rentifly_state", JSON.stringify(state));
+        } else {
+            // Migrate local storage or seed data to Firebase
+            const saved = localStorage.getItem("rentifly_state") || localStorage.getItem("velorent_state");
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && Array.isArray(parsed.bikes) && Array.isArray(parsed.rentals)) {
+                        state = parsed;
+                    }
+                } catch (e) {}
+            }
+            if (!state.bikes || state.bikes.length === 0) {
+                state = JSON.parse(JSON.stringify(SEED_DATA));
+            }
+            db.ref("rentifly_state").set(state);
+        }
+        
+        // Re-render the active view automatically when data changes
+        const activeTab = document.querySelector(".menu-list .menu-item.active")?.getAttribute("data-target") || "dashboard";
+        renderActiveView(activeTab);
+    });
+}
+
 function loadState() {
+    if (isFirebaseActive) {
+        setupFirebaseListener();
+        return;
+    }
     try {
         // Fallback to older velorent_state to prevent data loss on rename
         const saved = localStorage.getItem("rentifly_state") || localStorage.getItem("velorent_state");
@@ -181,8 +246,11 @@ function loadState() {
 function saveState() {
     try {
         localStorage.setItem("rentifly_state", JSON.stringify(state));
+        if (isFirebaseActive && db) {
+            db.ref("rentifly_state").set(state);
+        }
     } catch (e) {
-        console.error("Failed to save state to localStorage:", e);
+        console.error("Failed to save state:", e);
     }
 }
 
