@@ -263,6 +263,83 @@ function saveState() {
     }
 }
 
+// ── TIERED PRICING: Electric Scooter ──────────────────────────────
+// Hour 1: ₹80  | Hour 2: ₹70 | Hour 3: ₹60 | Hour 4+: ₹50 each
+// (decreases by ₹10 each hour down to minimum ₹50)
+const ELECTRIC_HOURLY_RATES = [80, 70, 60, 50]; // index 0=hr1, 1=hr2, 2=hr3, 3+=hr4+
+
+function calculateElectricCost(hours) {
+    // hours can be fractional; we bill per started hour
+    const billedHours = Math.max(1, Math.ceil(hours));
+    let total = 0;
+    for (let h = 1; h <= billedHours; h++) {
+        const rateIndex = Math.min(h - 1, ELECTRIC_HOURLY_RATES.length - 1);
+        total += ELECTRIC_HOURLY_RATES[rateIndex];
+    }
+    return total;
+}
+
+function showPricingTable() {
+    // Build the two-column breakdown
+    let rows1 = "", rows2 = "";
+    let running = 0;
+    for (let h = 1; h <= 10; h++) {
+        const rateIndex = Math.min(h - 1, ELECTRIC_HOURLY_RATES.length - 1);
+        const rate = ELECTRIC_HOURLY_RATES[rateIndex];
+        running += rate;
+        const row = `<tr>
+            <td style="padding:10px 14px; font-weight:700; color:#f2ba00;">${h}</td>
+            <td style="padding:10px 14px;">₹${rate}</td>
+            <td style="padding:10px 14px; font-weight:700; color:#00f2fe;">₹${running}</td>
+        </tr>`;
+        if (h <= 5) rows1 += row; else rows2 += row;
+    }
+    const tableStyle = `border-collapse:collapse; width:100%; background:rgba(0,0,0,0.3); border-radius:10px; overflow:hidden;`;
+    const thStyle = `background:#f2ba00; color:#0a0e17; padding:10px 14px; font-weight:800; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.5px; text-align:left;`;
+    const html = `
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <table style="${tableStyle} flex:1; min-width:200px;">
+                <thead><tr>
+                    <th style="${thStyle}">Hour</th>
+                    <th style="${thStyle}">Rate / hr</th>
+                    <th style="${thStyle}">Total</th>
+                </tr></thead>
+                <tbody style="color:#f3f4f6; font-size:0.9rem;">${rows1}</tbody>
+            </table>
+            <table style="${tableStyle} flex:1; min-width:200px;">
+                <thead><tr>
+                    <th style="${thStyle}">Hour</th>
+                    <th style="${thStyle}">Rate / hr</th>
+                    <th style="${thStyle}">Total</th>
+                </tr></thead>
+                <tbody style="color:#f3f4f6; font-size:0.9rem;">${rows2}</tbody>
+            </table>
+        </div>
+        <div style="margin-top:16px; background:rgba(242,186,0,0.08); border:1px solid rgba(242,186,0,0.3); border-radius:12px; padding:14px 18px; font-size:0.85rem; color:#f3f4f6; line-height:1.7;">
+            <strong style="color:#f2ba00;">NOTE:</strong>&nbsp;
+            • Rate decreases by ₹10 each hour till ₹50.&nbsp;&nbsp;
+            • From the 4th hour onwards, the rate remains at <strong style="color:#f2ba00;">₹50 per hour</strong>.
+            &nbsp;&nbsp;<span style="color:#ff4b2b; font-weight:700;">• NON-NEGOTIABLE PRICE.</span>
+        </div>`;
+
+    // Reuse the auth modal as a viewer
+    const overlay = document.createElement("div");
+    overlay.style = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;";
+    overlay.innerHTML = `
+        <div style="background:#0f1524;border:1px solid rgba(242,186,0,0.3);border-radius:20px;padding:28px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <div>
+                    <h3 style="font-size:1.25rem;font-weight:700;color:#f2ba00;">⚡ Electric Scooter Pricing</h3>
+                    <p style="color:#9ca3af;font-size:0.85rem;margin-top:4px;">Tiered hourly rate — charged per started hour</p>
+                </div>
+                <button onclick="this.closest('[style*=position]').remove()" style="background:rgba(255,75,43,0.15);border:1px solid rgba(255,75,43,0.3);border-radius:8px;padding:6px 10px;color:#ff4b2b;cursor:pointer;font-size:1.1rem;font-weight:700;">&times;</button>
+            </div>
+            ${html}
+        </div>`;
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+}
+
 // Toast Notifications Helper
 function showToast(message, type = "success") {
     const container = document.getElementById("toast-container");
@@ -578,7 +655,12 @@ function renderInventory() {
 
         card.innerHTML = `
             <div class="bike-image-container">
-                ${getBikeSVG(bike.type, bike.status)}
+                ${bike.name.toLowerCase().includes("access")
+                    ? `<img src="access125.jpg" alt="Access 125" style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;">`
+                    : bike.type === "Electric"
+                        ? `<img src="electric_scooter.jpg" alt="Electric Scooter" style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;">`
+                        : getBikeSVG(bike.type, bike.status)
+                }
                 <span class="bike-status-badge ${statusBadgeClass}">${bike.status}</span>
             </div>
             <div class="bike-details">
@@ -587,7 +669,15 @@ function renderInventory() {
                         <h4 class="bike-title">${bike.name}</h4>
                         <span class="bike-type">${bike.type}</span>
                     </div>
-                    <span class="bike-rate">₹${bike.rate.toFixed(2)}<span style="font-size: 0.75rem; font-weight: 500; color: var(--text-secondary);">/${bike.rateType.toLowerCase()}</span></span>
+                    <div style="text-align:right;">
+                        ${bike.type === "Electric" && bike.rateType === "Hour"
+                            ? `<div style="font-size:0.75rem;color:#f2ba00;font-weight:600;line-height:1.3;">
+                                 ₹80 → ₹70 → ₹50<span style="color:var(--text-muted);font-weight:400;">/hr</span>
+                               </div>
+                               <button onclick="showPricingTable()" style="margin-top:4px;font-size:0.65rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#f2ba00;background:rgba(242,186,0,0.1);border:1px solid rgba(242,186,0,0.3);border-radius:6px;padding:3px 8px;cursor:pointer;">⚡ View Pricing</button>`
+                            : `<span class="bike-rate">₹${bike.rate.toFixed(2)}<span style="font-size: 0.75rem; font-weight: 500; color: var(--text-secondary);">/${bike.rateType.toLowerCase()}</span></span>`
+                        }
+                    </div>
                 </div>
                 <div class="bike-meta">
                     <div><strong>Serial:</strong> ${bike.sn}</div>
@@ -1034,7 +1124,12 @@ document.getElementById("rent-duration").addEventListener("input", (e) => {
     const bikeId = document.getElementById("rent-bike-id").value;
     const bike = state.bikes.find(b => b.id === bikeId);
     if (bike) {
-        const est = val * bike.rate;
+        let est;
+        if (bike.type === "Electric" && bike.rateType === "Hour") {
+            est = calculateElectricCost(val);
+        } else {
+            est = val * bike.rate;
+        }
         document.getElementById("rent-estimated-cost").innerText = `₹${est.toFixed(2)}`;
     }
 });
@@ -1135,8 +1230,14 @@ function openReturnModal(rentalId) {
     
     document.getElementById("return-display-duration").innerText = `${unitsElapsed} ${bike.rateType.toLowerCase()}(s)`;
     
-    const charge = unitsElapsed * bike.rate;
+    const charge = (bike.type === "Electric" && bike.rateType === "Hour")
+        ? calculateElectricCost(unitsElapsed)
+        : unitsElapsed * bike.rate;
     document.getElementById("return-display-charge").innerText = `₹${charge.toFixed(2)}`;
+
+    // Show pricing info button for Electric bikes
+    const pricingHint = document.getElementById("electric-pricing-hint");
+    if (pricingHint) pricingHint.style.display = (bike.type === "Electric") ? "block" : "none";
 
     modalReturn.classList.add("active");
 }
@@ -1171,7 +1272,9 @@ formReturn.addEventListener("submit", (e) => {
 
     const elapsedHours = elapsedMs / (1000 * 60 * 60);
     const unitsElapsed = bike.rateType === "Hour" ? Math.max(1, Math.round(elapsedHours * 10) / 10) : Math.max(1, Math.round(elapsedHours / 24));
-    const cost = unitsElapsed * bike.rate;
+    const cost = (bike.type === "Electric" && bike.rateType === "Hour")
+        ? calculateElectricCost(unitsElapsed)
+        : unitsElapsed * bike.rate;
 
     // Update Rental Log
     rental.endTime = endTime;

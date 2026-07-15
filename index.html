@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rentifly // Premium Bike Rental & Inventory Dashboard</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -595,6 +595,11 @@
                         <span style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">Total Charged:</span>
                         <span id="return-display-charge" style="font-size: 1.5rem; font-weight: 700; color: var(--color-success);">₹0.00</span>
                     </div>
+                    <!-- Electric pricing hint — shown only for Electric bikes via JS -->
+                    <div id="electric-pricing-hint" style="display:none; margin-top:12px; background:rgba(242,186,0,0.07); border:1px solid rgba(242,186,0,0.25); border-radius:10px; padding:10px 14px; font-size:0.82rem; color:#9ca3af;">
+                        <span style="color:#f2ba00; font-weight:700;">⚡ Tiered pricing applied</span> — ₹80 (hr 1) → ₹70 (hr 2) → ₹60 (hr 3) → ₹50/hr onwards.
+                        <button type="button" onclick="showPricingTable()" style="margin-left:8px; color:#f2ba00; background:none; border:none; cursor:pointer; font-size:0.82rem; text-decoration:underline; font-weight:600;">View full table</button>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="modal-return-cancel">Cancel</button>
@@ -719,6 +724,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=9"></script>
 </body>
 </html>
