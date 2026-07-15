@@ -190,6 +190,8 @@ function setupFirebaseListener() {
     db.ref("rentifly_state").on("value", (snapshot) => {
         const data = snapshot.val();
         if (data && Array.isArray(data.bikes) && Array.isArray(data.rentals)) {
+            data.bikes = data.bikes.filter(b => b && typeof b === "object");
+            data.rentals = data.rentals.filter(r => r && typeof r === "object");
             state = data;
             localStorage.setItem("rentifly_state", JSON.stringify(state));
         } else {
@@ -538,7 +540,7 @@ function renderInventory() {
         if (bike.status === "Available") {
             mainActionButtonHtml = `<button class="btn btn-primary" onclick="openRentModal('${bike.id}')">Rent Now</button>`;
         } else if (bike.status === "Rented") {
-            const activeRental = state.rentals.find(r => r.bikeId === bike.id && r.status === "Active");
+            const activeRental = (state.rentals || []).find(r => r && r.bikeId === bike.id && r.status === "Active");
             mainActionButtonHtml = `<button class="btn btn-secondary" onclick="openReturnModal('${activeRental?.id}')">Return Bike</button>`;
         } else if (bike.status === "Maintenance") {
             mainActionButtonHtml = `<button class="btn btn-secondary" onclick="markReady('${bike.id}')">Mark Available</button>`;
@@ -588,13 +590,13 @@ function renderRentals() {
     const searchQuery = document.getElementById("search-rentals").value.toLowerCase();
     tableBody.innerHTML = "";
 
-    const activeRentals = state.rentals.filter(r => r.status === "Active");
+    const activeRentals = (state.rentals || []).filter(r => r && r.status === "Active");
     
     const filteredRentals = activeRentals.filter(rental => {
-        const bike = state.bikes.find(b => b.id === rental.bikeId);
+        const bike = (state.bikes || []).find(b => b && b.id === rental.bikeId);
         const bikeName = bike ? bike.name.toLowerCase() : "";
-        return rental.customerName.toLowerCase().includes(searchQuery) ||
-               rental.customerPhone.includes(searchQuery) ||
+        return (rental.customerName || "").toLowerCase().includes(searchQuery) ||
+               (rental.customerPhone || "").includes(searchQuery) ||
                bikeName.includes(searchQuery);
     });
 
@@ -644,12 +646,12 @@ function renderHistory() {
     const searchQuery = document.getElementById("search-history").value.toLowerCase();
     tableBody.innerHTML = "";
 
-    const completedRentals = state.rentals.filter(r => r.status === "Completed");
+    const completedRentals = (state.rentals || []).filter(r => r && r.status === "Completed");
 
     const filteredHistory = completedRentals.filter(rental => {
-        const bike = state.bikes.find(b => b.id === rental.bikeId);
+        const bike = (state.bikes || []).find(b => b && b.id === rental.bikeId);
         const bikeName = bike ? bike.name.toLowerCase() : "";
-        return rental.customerName.toLowerCase().includes(searchQuery) ||
+        return (rental.customerName || "").toLowerCase().includes(searchQuery) ||
                bikeName.includes(searchQuery);
     });
 
