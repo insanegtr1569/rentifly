@@ -1510,4 +1510,23 @@ document.getElementById("modal-earnings-ok").addEventListener("click", closeEarn
 // App Initialization
 window.addEventListener("DOMContentLoaded", () => {
     checkAuth();
+    
+    // Bulletproof mobile scroll lock for modals
+    const modals = document.querySelectorAll('.modal-overlay');
+    if (modals.length > 0) {
+        const observer = new MutationObserver(() => {
+            const isAnyModalOpen = Array.from(modals).some(m => m.classList.contains('active'));
+            // When modal opens, lock body scroll and prevent touchmove bubbling
+            if (isAnyModalOpen) {
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
+            }
+        });
+        modals.forEach(m => {
+            observer.observe(m, { attributes: true, attributeFilter: ['class'] });
+        });
+    }
 });
