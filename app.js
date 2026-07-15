@@ -655,12 +655,32 @@ function renderInventory() {
 
         card.innerHTML = `
             <div class="bike-image-container">
-                ${bike.name.toLowerCase().includes("access")
-                    ? `<img src="access125.jpg" alt="Access 125" style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;">`
-                    : bike.type === "Electric"
-                        ? `<img src="electric_scooter.jpg" alt="Electric Scooter" style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;">`
-                        : getBikeSVG(bike.type, bike.status)
-                }
+                ${(() => {
+                    const n = bike.name.toLowerCase();
+                    if (n.includes("black") && (n.includes("access") || n.includes("125"))) {
+                        return `<img src="access125_black.jpg?v=2" alt="Access 125 Black"
+                            style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;"
+                            onerror="this.style.display='none'">`;
+                    } else if (n.includes("white") && (n.includes("access") || n.includes("125"))) {
+                        return `<img src="access125_white.jpg" alt="Access 125 White"
+                            style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;"
+                            onerror="this.style.display='none'">`;
+                    } else if (n.includes("access") || n.includes("125")) {
+                        return `<img src="access125.jpg" alt="Access 125"
+                            style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;"
+                            onerror="this.style.display='none'">`;
+                    } else if (n.includes("ns 200") || n.includes("ns200")) {
+                        return `<img src="ns200.jpg" alt="NS 200"
+                            style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;"
+                            onerror="this.style.display='none'">`;
+                    } else if (bike.type === "Electric") {
+                        return `<img src="electric_scooter.jpg" alt="Electric Scooter"
+                            style="width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;"
+                            onerror="this.style.display='none'">`;
+                    } else {
+                        return getBikeSVG(bike.type, bike.status);
+                    }
+                })()}
                 <span class="bike-status-badge ${statusBadgeClass}">${bike.status}</span>
             </div>
             <div class="bike-details">
