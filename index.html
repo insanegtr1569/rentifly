@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rentifly // Premium Bike Rental & Inventory Dashboard</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -503,9 +503,36 @@
                         <input type="text" id="customer-phone" class="form-control" placeholder="e.g., 9876543210" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" title="Must be exactly 10 numeric digits">
                     </div>
                     <div class="form-group">
+                        <label for="customer-alt-phone">Alternate Mobile No. <span style="color: var(--text-muted); font-weight: 400;">(Optional)</span></label>
+                        <input type="text" id="customer-alt-phone" class="form-control" placeholder="e.g., 9123456789" maxlength="10" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-address">Customer Address</label>
+                        <textarea id="customer-address" class="form-control" placeholder="e.g., 123 Main Street, Kota, Rajasthan" required rows="2" style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-id-type">ID Proof Type</label>
+                            <select id="customer-id-type" class="form-control" required>
+                                <option value="">Select ID</option>
+                                <option value="Aadhar Card">Aadhar Card</option>
+                                <option value="Driving License">Driving License</option>
+                                <option value="Voter ID">Voter ID</option>
+                                <option value="PAN Card">PAN Card</option>
+                                <option value="Passport">Passport</option>
+                                <option value="College ID">College ID</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-id-number">ID Number</label>
+                            <input type="text" id="customer-id-number" class="form-control" placeholder="e.g., XXXX-XXXX-XXXX" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label>Customer Photo Verification</label>
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 12px; border-radius: 10px;">
-                            <video id="rent-camera" autoplay playsinline style="width: 100%; max-height: 160px; border-radius: 6px; display: none; object-fit: cover; background: #000; transform: scaleX(-1);"></video>
+                            <video id="rent-camera" autoplay playsinline style="width: 100%; max-height: 160px; border-radius: 6px; display: none; object-fit: cover; background: #000;"></video>
                             <canvas id="rent-canvas" style="display: none;"></canvas>
                             <img id="rent-photo-preview" style="width: 100%; max-height: 160px; border-radius: 6px; display: none; object-fit: cover;">
                             
@@ -746,6 +773,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=15"></script>
+    <script src="app.js?v=16"></script>
 </body>
 </html>

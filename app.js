@@ -1030,8 +1030,16 @@ if (customerPhoneInput) {
     });
 }
 
+// Enforce numeric-only input on alternate phone field
+const altPhoneInput = document.getElementById("customer-alt-phone");
+if (altPhoneInput) {
+    altPhoneInput.addEventListener("input", function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+    });
+}
+
 function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
         .then(stream => {
             cameraStream = stream;
             videoElement.srcObject = stream;
@@ -1058,8 +1066,7 @@ function capturePhoto() {
     canvasElement.width = width;
     canvasElement.height = height;
     
-    context.translate(width, 0);
-    context.scale(-1, 1);
+    // No mirror flip — using back camera
     context.drawImage(videoElement, 0, 0, width, height);
     
     capturedPhotoData = canvasElement.toDataURL("image/jpeg");
@@ -1194,6 +1201,10 @@ btnPaymentDone.addEventListener("click", () => {
     const bikeId = document.getElementById("rent-bike-id").value;
     const customerName = document.getElementById("customer-name").value;
     const customerPhone = document.getElementById("customer-phone").value;
+    const customerAltPhone = document.getElementById("customer-alt-phone").value || "";
+    const customerAddress = document.getElementById("customer-address").value;
+    const customerIdType = document.getElementById("customer-id-type").value;
+    const customerIdNumber = document.getElementById("customer-id-number").value;
     const estDuration = parseInt(document.getElementById("rent-duration").value);
 
     const bike = state.bikes.find(b => b.id === bikeId);
@@ -1213,6 +1224,10 @@ btnPaymentDone.addEventListener("click", () => {
         bikeId: bike.id,
         customerName,
         customerPhone,
+        customerAltPhone,
+        customerAddress,
+        customerIdType,
+        customerIdNumber,
         customerPhoto: capturedPhotoData,
         startTime: Date.now(),
         endTime: null,
