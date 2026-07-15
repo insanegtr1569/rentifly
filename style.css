@@ -628,6 +628,10 @@ header {
     pointer-events: all;
 }
 
+body:has(.modal-overlay.active) {
+    overflow: hidden;
+}
+
 .modal-content {
     background: #0f1524;
     border: 1px solid var(--border-color);
@@ -638,6 +642,9 @@ header {
     overflow: hidden;
     transform: translateY(30px);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-overlay.active .modal-content {
@@ -650,6 +657,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .modal-header h3 {
@@ -678,6 +686,7 @@ header {
 
 .modal-body {
     padding: 24px;
+    overflow-y: auto;
 }
 
 /* Forms controls */
@@ -723,6 +732,7 @@ header {
     justify-content: flex-end;
     gap: 12px;
     background: rgba(10, 14, 23, 0.4);
+    flex-shrink: 0;
 }
 
 /* Tables and logs */
