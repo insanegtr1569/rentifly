@@ -642,7 +642,7 @@ body:has(.modal-overlay.active) {
     overflow: hidden;
     transform: translateY(30px);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    max-height: 85vh;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
 }
@@ -687,6 +687,12 @@ body:has(.modal-overlay.active) {
 .modal-body {
     padding: 24px;
     overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
 }
 
 /* Forms controls */
