@@ -138,6 +138,31 @@
 
     <!-- MAIN CONTENT -->
     <main style="display: none;">
+        <!-- MOBILE TOP BAR -->
+        <div class="mobile-top-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 32px; height: 24px;">
+                    <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                        <line x1="5" y1="18" x2="22" y2="18" stroke="#f2ba00" stroke-width="4" stroke-linecap="round" />
+                        <line x1="2" y1="27" x2="18" y2="27" stroke="#f2ba00" stroke-width="4" stroke-linecap="round" />
+                        <line x1="8" y1="36" x2="24" y2="36" stroke="#f2ba00" stroke-width="4" stroke-linecap="round" />
+                        <path d="M25 45 C25 35 32 30 40 30 L45 30 L55 18 H66 C68 18 70 20 70 23 L70 33 L62 45 Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+                        <path d="M60 18 L68 8 H60" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+                        <circle cx="32" cy="45" r="9" fill="none" stroke="#ffffff" stroke-width="4" />
+                        <circle cx="32" cy="45" r="5" fill="#f2ba00" />
+                        <circle cx="64" cy="45" r="9" fill="none" stroke="#ffffff" stroke-width="4" />
+                        <circle cx="64" cy="45" r="5" fill="#f2ba00" />
+                    </svg>
+                </div>
+                <div style="font-size: 1.3rem; font-weight: 800; font-style: italic; font-family: 'Outfit', sans-serif; display: flex; align-items: center;">
+                    <span style="color: #ffffff;">renti</span><span style="color: #f2ba00;">fly</span>
+                </div>
+            </div>
+            <button class="btn-mobile-logout" id="btn-logout-mobile" title="Sign Out">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4b2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            </button>
+        </div>
+
         <!-- HEADER -->
         <header>
             <div class="page-title">
@@ -373,6 +398,26 @@
                 </table>
             </div>
         </section>
+
+        <!-- MOBILE BOTTOM NAV -->
+        <nav class="mobile-bottom-nav">
+            <div class="mobile-nav-item active" data-target="dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Dashboard</span>
+            </div>
+            <div class="mobile-nav-item" data-target="inventory">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 17.5 11.5 12h-4L5.5 17.5M11.5 12h4.5l2.5 5.5M12 12V7.5L9 5M12 7.5h4"/></svg>
+                <span>Inventory</span>
+            </div>
+            <div class="mobile-nav-item" data-target="rentals">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Active</span>
+            </div>
+            <div class="mobile-nav-item" data-target="history">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>History</span>
+            </div>
+        </nav>
     </main>
 
     <!-- MODAL: ADD / EDIT BIKE -->
@@ -674,6 +719,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>

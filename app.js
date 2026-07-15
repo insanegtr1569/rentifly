@@ -311,30 +311,43 @@ const navigationMetadata = {
 navItems.forEach(item => {
     item.addEventListener("click", () => {
         const targetSection = item.getAttribute("data-target");
-        
-        // Update navigation UI
-        navItems.forEach(nav => nav.classList.remove("active"));
-        item.classList.add("active");
-        
-        // Display target viewport
-        pageSections.forEach(section => {
-            section.classList.remove("active");
-            if (section.id === `${targetSection}-section`) {
-                section.classList.add("active");
-            }
-        });
-        
-        // Update header details
-        viewTitle.innerText = navigationMetadata[targetSection].title;
-        viewDescription.innerText = navigationMetadata[targetSection].desc;
-
-        // Render targets
         renderActiveView(targetSection);
     });
 });
 
 // Main dynamic render hub
 function renderActiveView(viewName) {
+    // Synchronize Desktop & Mobile active tab highlights
+    document.querySelectorAll(".menu-list .menu-item").forEach(item => {
+        if (item.getAttribute("data-target") === viewName) {
+            item.classList.add("active");
+        } else {
+            item.classList.remove("active");
+        }
+    });
+
+    document.querySelectorAll(".mobile-bottom-nav .mobile-nav-item").forEach(item => {
+        if (item.getAttribute("data-target") === viewName) {
+            item.classList.add("active");
+        } else {
+            item.classList.remove("active");
+        }
+    });
+
+    // Display target viewport
+    pageSections.forEach(section => {
+        section.classList.remove("active");
+        if (section.id === `${viewName}-section`) {
+            section.classList.add("active");
+        }
+    });
+
+    // Update header details
+    if (navigationMetadata[viewName]) {
+        if (viewTitle) viewTitle.innerText = navigationMetadata[viewName].title;
+        if (viewDescription) viewDescription.innerText = navigationMetadata[viewName].desc;
+    }
+
     updateStats();
     if (viewName === "dashboard") {
         renderDashboard();
@@ -345,6 +358,23 @@ function renderActiveView(viewName) {
     } else if (viewName === "history") {
         renderHistory();
     }
+}
+
+// Bind Mobile Bottom Navigation & Top Logout Events
+document.querySelectorAll(".mobile-bottom-nav .mobile-nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+        const target = item.getAttribute("data-target");
+        renderActiveView(target);
+    });
+});
+
+const mobileLogoutBtn = document.getElementById("btn-logout-mobile");
+if (mobileLogoutBtn) {
+    mobileLogoutBtn.addEventListener("click", () => {
+        sessionStorage.removeItem("rentifly_logged_in");
+        checkAuth();
+        showToast("Logged out successfully.", "info");
+    });
 }
 
 // Stats Calculation
