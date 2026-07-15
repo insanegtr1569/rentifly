@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rentifly // Premium Bike Rental & Inventory Dashboard</title>
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 
@@ -123,6 +123,15 @@
                         <path d="M12 7v5l3 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span>Rental History</span>
+                </button>
+            </li>
+            <li class="menu-item" data-target="revenue">
+                <button>
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    <span>Revenue</span>
                 </button>
             </li>
         </ul>
@@ -254,6 +263,7 @@
                                     <th>Customer</th>
                                     <th>Started At</th>
                                     <th>Est. Duration</th>
+                                    <th>Expected Return At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -398,6 +408,68 @@
                 </table>
             </div>
         </section>
+        <!-- 5. REVENUE SECTION -->
+        <section id="revenue-section" class="page-section">
+            <!-- Time period selectors -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px;">
+                <div class="stat-card" style="background: rgba(0, 242, 254, 0.03); border: 1px solid var(--border-color); padding: 16px; border-radius: 14px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Today</div>
+                    <div id="revenue-today" style="font-size: 1.5rem; font-weight: 700; color: var(--color-success); margin-top: 6px;">₹0.00</div>
+                    <div id="revenue-today-count" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">0 rentals</div>
+                </div>
+                <div class="stat-card" style="background: rgba(177, 84, 252, 0.03); border: 1px solid var(--border-color); padding: 16px; border-radius: 14px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">This Month</div>
+                    <div id="revenue-month" style="font-size: 1.5rem; font-weight: 700; color: var(--color-success); margin-top: 6px;">₹0.00</div>
+                    <div id="revenue-month-count" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">0 rentals</div>
+                </div>
+                <div class="stat-card" style="background: rgba(242, 186, 0, 0.03); border: 1px solid var(--border-color); padding: 16px; border-radius: 14px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Custom Range</div>
+                    <div id="revenue-custom" style="font-size: 1.5rem; font-weight: 700; color: var(--color-success); margin-top: 6px;">₹0.00</div>
+                    <div id="revenue-custom-count" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">0 rentals</div>
+                </div>
+            </div>
+
+            <!-- Custom date range selector bar -->
+            <div class="filters-bar" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; padding: 16px; background: rgba(18, 26, 44, 0.4); border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 24px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label for="revenue-start-date" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Start Date</label>
+                        <input type="date" id="revenue-start-date" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; width: auto; background: rgba(10, 14, 23, 0.8);">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label for="revenue-end-date" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">End Date</label>
+                        <input type="date" id="revenue-end-date" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; width: auto; background: rgba(10, 14, 23, 0.8);">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label for="revenue-bike-select" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Filter by Bike</label>
+                        <select id="revenue-bike-select" class="form-control" style="padding: 8px 12px; font-size: 0.85rem; width: 180px; background: rgba(10, 14, 23, 0.8); height: 38px;">
+                            <option value="">All Bicycles</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="btn-filter-revenue" style="padding: 8px 16px; font-size: 0.85rem; align-self: flex-end; height: 38px; min-height: unset; margin: 0; box-shadow: var(--glow-primary);">Filter</button>
+                </div>
+                <button class="btn btn-secondary" id="btn-reset-revenue" style="padding: 8px 16px; font-size: 0.85rem; align-self: flex-end; height: 38px; min-height: unset; margin: 0;">Reset</button>
+            </div>
+
+            <!-- Table of matching transactions -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rental ID</th>
+                            <th>Bike Details</th>
+                            <th>Customer</th>
+                            <th>Return Date</th>
+                            <th>Duration</th>
+                            <th>Amount Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenue-transactions-table">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <!-- MOBILE BOTTOM NAV -->
         <nav class="mobile-bottom-nav">
@@ -416,6 +488,10 @@
             <div class="mobile-nav-item" data-target="history">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <span>History</span>
+            </div>
+            <div class="mobile-nav-item" data-target="revenue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Revenue</span>
             </div>
         </nav>
     </main>
@@ -528,6 +604,16 @@
                         <div class="form-group">
                             <label for="customer-id-number">ID Number</label>
                             <input type="text" id="customer-id-number" class="form-control" placeholder="e.g., XXXX-XXXX-XXXX" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-age">Customer Age</label>
+                            <input type="number" id="customer-age" min="1" max="120" class="form-control" placeholder="e.g., 25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rent-discount">Discount (Flat ₹)</label>
+                            <input type="number" id="rent-discount" min="0" class="form-control" placeholder="e.g., 50" value="0">
                         </div>
                     </div>
                     <div class="form-group">
@@ -774,6 +860,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=24"></script>
 </body>
 </html>

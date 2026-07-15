@@ -190,6 +190,7 @@ main {
     padding: 40px;
     min-height: 100vh;
     transition: margin-left var(--transition-speed) ease;
+    min-width: 0;
 }
 
 /* Header Area */
@@ -748,6 +749,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    min-width: 700px;
 }
 
 th {

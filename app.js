@@ -382,6 +382,10 @@ const navigationMetadata = {
     history: {
         title: "Rental History",
         desc: "Past logs and transaction reports."
+    },
+    revenue: {
+        title: "Revenue & Earnings",
+        desc: "Analyze financial statistics by day, month, or custom period."
     }
 };
 
@@ -434,6 +438,8 @@ function renderActiveView(viewName) {
         renderRentals();
     } else if (viewName === "history") {
         renderHistory();
+    } else if (viewName === "revenue") {
+        renderRevenue();
     }
 }
 
@@ -489,7 +495,7 @@ function renderDashboard() {
     const activeRentals = state.rentals.filter(r => r.status === "Active");
     
     if (activeRentals.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">No bikes are currently checked out.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No bikes are currently checked out.</td></tr>`;
         if (forecastContainer) {
             forecastContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 24px; background: rgba(255,255,255,0.01); border: 1px dashed var(--border-color); border-radius: 12px; font-size: 0.9rem;">All bikes are currently available in the fleet.</div>`;
         }
@@ -505,6 +511,12 @@ function renderDashboard() {
         // Calculate current elapsed time for display
         const elapsedMs = Date.now() - rental.startTime;
         const elapsedHours = (elapsedMs / (1000 * 60 * 60)).toFixed(1);
+
+        // Calculate expected return time
+        const durationMs = rental.estDuration * (bike.rateType === 'Hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000);
+        const expectedReturnTime = new Date(rental.startTime + durationMs);
+        const expectedReturnFormatted = expectedReturnTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + 
+            (bike.rateType === 'Day' ? ' (' + expectedReturnTime.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ')' : '');
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -525,6 +537,7 @@ function renderDashboard() {
             </td>
             <td>${startTimeFormatted} <span style="font-size: 0.8rem; color: var(--text-muted);">(${elapsedHours}h ago)</span></td>
             <td>${rental.estDuration} ${bike.rateType === 'Hour' ? 'hrs' : 'days'}</td>
+            <td><strong style="color: var(--color-accent);">${expectedReturnFormatted}</strong></td>
             <td>
                 <div style="display: flex; gap: 6px;">
                     <button class="btn btn-secondary btn-icon" onclick="openExtendModal('${rental.id}')" title="Extend Time">
@@ -836,6 +849,183 @@ function renderHistory() {
             </tr>
         `;
     });
+}// ─── REVENUE & FINANCIAL REPORTING ──────────────────────────────────
+function renderRevenue() {
+    // Populate the bike selection dropdown if it hasn't been populated or length mismatch
+    const bikeSelect = document.getElementById("revenue-bike-select");
+    if (bikeSelect) {
+        const currentSelection = bikeSelect.value;
+        // Keep "All Bicycles" + list of bikes
+        if (bikeSelect.options.length !== (state.bikes.length + 1)) {
+            bikeSelect.innerHTML = '<option value="">All Bicycles</option>';
+            state.bikes.forEach(bike => {
+                const opt = document.createElement("option");
+                opt.value = bike.id;
+                opt.innerText = `${bike.name} (${bike.sn})`;
+                bikeSelect.appendChild(opt);
+            });
+            // Restore selection if valid
+            if (currentSelection && state.bikes.some(b => b.id === currentSelection)) {
+                bikeSelect.value = currentSelection;
+            }
+        }
+    }
+
+    const todayStr = new Date().toDateString();
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const selectedBikeId = bikeSelect ? bikeSelect.value : "";
+    
+    let todayTotal = 0;
+    let todayCount = 0;
+    let monthTotal = 0;
+    let monthCount = 0;
+    
+    const completedRentals = (state.rentals || []).filter(r => r && r.status === "Completed");
+    
+    completedRentals.forEach(rental => {
+        // Filter by bike if selected
+        if (selectedBikeId && rental.bikeId !== selectedBikeId) return;
+
+        const returnDate = new Date(rental.endTime);
+        const cost = rental.actualCost || 0;
+        
+        // Today
+        if (returnDate.toDateString() === todayStr) {
+            todayTotal += cost;
+            todayCount++;
+        }
+        
+        // Current Month
+        if (returnDate.getFullYear() === currentYear && returnDate.getMonth() === currentMonth) {
+            monthTotal += cost;
+            monthCount++;
+        }
+    });
+    
+    const revTodayEl = document.getElementById("revenue-today");
+    const revTodayCountEl = document.getElementById("revenue-today-count");
+    const revMonthEl = document.getElementById("revenue-month");
+    const revMonthCountEl = document.getElementById("revenue-month-count");
+
+    if (revTodayEl) revTodayEl.innerText = `₹${todayTotal.toFixed(2)}`;
+    if (revTodayCountEl) revTodayCountEl.innerText = `${todayCount} rental${todayCount !== 1 ? 's' : ''}`;
+    if (revMonthEl) revMonthEl.innerText = `₹${monthTotal.toFixed(2)}`;
+    if (revMonthCountEl) revMonthCountEl.innerText = `${monthCount} rental${monthCount !== 1 ? 's' : ''}`;
+    
+    filterCustomRevenue();
+}
+
+function filterCustomRevenue() {
+    const startDateVal = document.getElementById("revenue-start-date").value;
+    const endDateVal = document.getElementById("revenue-end-date").value;
+    const bikeSelect = document.getElementById("revenue-bike-select");
+    const selectedBikeId = bikeSelect ? bikeSelect.value : "";
+    const tableBody = document.getElementById("revenue-transactions-table");
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = "";
+    
+    let startLimit = null;
+    let endLimit = null;
+    
+    if (startDateVal) {
+        startLimit = new Date(startDateVal);
+        startLimit.setHours(0,0,0,0);
+    }
+    if (endDateVal) {
+        endLimit = new Date(endDateVal);
+        endLimit.setHours(23,59,59,999);
+    }
+    
+    let customTotal = 0;
+    let customCount = 0;
+    
+    const completedRentals = (state.rentals || []).filter(r => r && r.status === "Completed");
+    
+    completedRentals.forEach(rental => {
+        // Filter by bike
+        if (selectedBikeId && rental.bikeId !== selectedBikeId) return;
+
+        const returnDate = new Date(rental.endTime);
+        const cost = rental.actualCost || 0;
+        
+        let matches = true;
+        if (startLimit && returnDate < startLimit) matches = false;
+        if (endLimit && returnDate > endLimit) matches = false;
+        
+        if (matches) {
+            customTotal += cost;
+            customCount++;
+            
+            const bike = state.bikes.find(b => b.id === rental.bikeId);
+            const returnDateStr = returnDate.toLocaleDateString() + " " + returnDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Calculate duration display
+            const durationHours = ((rental.endTime - rental.startTime) / (1000 * 60 * 60)).toFixed(1);
+            const durationDisplay = bike ? (bike.rateType === 'Hour' ? `${durationHours} hrs` : `${(durationHours / 24).toFixed(1)} days`) : `${durationHours} hrs`;
+            
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong style="font-family: monospace; font-size: 0.85rem;">${rental.id}</strong></td>
+                <td>
+                    <div style="font-weight: 600;">${bike ? bike.name : 'Deleted Bike'}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">${bike ? bike.type : ''} &bull; S/N: ${bike ? bike.sn : ''}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 600;">${rental.customerName}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Phone: ${rental.customerPhone}</div>
+                </td>
+                <td>${returnDateStr}</td>
+                <td>${durationDisplay}</td>
+                <td style="color: var(--color-success); font-weight: 700;">₹${cost.toFixed(2)}</td>
+            `;
+            tableBody.appendChild(tr);
+        }
+    });
+    
+    const revCustomEl = document.getElementById("revenue-custom");
+    const revCustomCountEl = document.getElementById("revenue-custom-count");
+
+    if (revCustomEl) revCustomEl.innerText = `₹${customTotal.toFixed(2)}`;
+    if (revCustomCountEl) revCustomCountEl.innerText = `${customCount} rental${customCount !== 1 ? 's' : ''}`;
+    
+    if (tableBody.children.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                    No transactions found for the selected period.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Bind Revenue filter action listeners
+const filterRevBtn = document.getElementById("btn-filter-revenue");
+if (filterRevBtn) {
+    filterRevBtn.addEventListener("click", filterCustomRevenue);
+}
+
+const resetRevBtn = document.getElementById("btn-reset-revenue");
+if (resetRevBtn) {
+    resetRevBtn.addEventListener("click", () => {
+        document.getElementById("revenue-start-date").value = "";
+        document.getElementById("revenue-end-date").value = "";
+        const bikeSelect = document.getElementById("revenue-bike-select");
+        if (bikeSelect) bikeSelect.value = "";
+        // Re-run filter and update calculations
+        renderRevenue();
+    });
+}
+
+// Auto-filter on bike select change
+const bikeSelectEl = document.getElementById("revenue-bike-select");
+if (bikeSelectEl) {
+    bikeSelectEl.addEventListener("change", () => {
+        renderRevenue();
+    });
 }
 
 // INVENTORY SEARCH & FILTER HANDLERS
@@ -1140,6 +1330,7 @@ function fillCustomerForm(customer) {
     document.getElementById("customer-address").value = customer.address || "";
     document.getElementById("customer-id-type").value = customer.idType || "";
     document.getElementById("customer-id-number").value = customer.idNumber || "";
+    document.getElementById("customer-age").value = customer.age || "";
 }
 // ─── END CUSTOMER AUTOCOMPLETE ──────────────────────────────────────
 
@@ -1245,14 +1436,19 @@ function openRentModal(bikeId) {
     document.getElementById("rent-duration-unit").value = bike.rateType;
     document.getElementById("rent-estimated-cost").innerText = "₹0.00";
     
+    // Reset age and discount
+    document.getElementById("customer-age").value = "";
+    document.getElementById("rent-discount").value = "0";
+    
     resetCameraUI();
 
     modalRent.classList.add("active");
 }
 
 // Auto-estimate calculator during rent
-document.getElementById("rent-duration").addEventListener("input", (e) => {
-    const val = parseInt(e.target.value) || 0;
+function updateEstimatedRentCost() {
+    const val = parseInt(document.getElementById("rent-duration").value) || 0;
+    const discount = parseFloat(document.getElementById("rent-discount").value) || 0;
     const bikeId = document.getElementById("rent-bike-id").value;
     const bike = state.bikes.find(b => b.id === bikeId);
     if (bike) {
@@ -1262,9 +1458,12 @@ document.getElementById("rent-duration").addEventListener("input", (e) => {
         } else {
             est = val * bike.rate;
         }
-        document.getElementById("rent-estimated-cost").innerText = `₹${est.toFixed(2)}`;
+        const finalEst = Math.max(0, est - discount);
+        document.getElementById("rent-estimated-cost").innerText = `₹${finalEst.toFixed(2)}`;
     }
-});
+}
+document.getElementById("rent-duration").addEventListener("input", updateEstimatedRentCost);
+document.getElementById("rent-discount").addEventListener("input", updateEstimatedRentCost);
 
 // Close Rent Modal
 const closeRentModal = () => {
@@ -1310,6 +1509,8 @@ btnPaymentDone.addEventListener("click", () => {
     const customerAddress = document.getElementById("customer-address").value;
     const customerIdType = document.getElementById("customer-id-type").value;
     const customerIdNumber = document.getElementById("customer-id-number").value;
+    const customerAge = parseInt(document.getElementById("customer-age").value) || "";
+    const discount = parseFloat(document.getElementById("rent-discount").value) || 0;
     const estDuration = parseInt(document.getElementById("rent-duration").value);
 
     const bike = state.bikes.find(b => b.id === bikeId);
@@ -1334,6 +1535,8 @@ btnPaymentDone.addEventListener("click", () => {
         customerIdType,
         customerIdNumber,
         customerPhoto: capturedPhotoData,
+        customerAge,
+        discount,
         startTime: Date.now(),
         endTime: null,
         estDuration,
@@ -1348,7 +1551,8 @@ btnPaymentDone.addEventListener("click", () => {
         altPhone: customerAltPhone,
         address: customerAddress,
         idType: customerIdType,
-        idNumber: customerIdNumber
+        idNumber: customerIdNumber,
+        age: customerAge
     });
 
     saveState();
@@ -1411,7 +1615,9 @@ function openReturnModal(rentalId) {
     const charge = (bike.type === "Electric" && bike.rateType === "Hour")
         ? calculateElectricCost(unitsElapsed)
         : unitsElapsed * bike.rate;
-    document.getElementById("return-display-charge").innerText = `₹${charge.toFixed(2)}`;
+    const discount = rental.discount || 0;
+    const finalCharge = Math.max(0, charge - discount);
+    document.getElementById("return-display-charge").innerText = `₹${finalCharge.toFixed(2)}`;
 
     // Show pricing info button for Electric bikes
     const pricingHint = document.getElementById("electric-pricing-hint");
@@ -1450,9 +1656,10 @@ formReturn.addEventListener("submit", (e) => {
 
     const elapsedHours = elapsedMs / (1000 * 60 * 60);
     const unitsElapsed = bike.rateType === "Hour" ? Math.max(1, Math.round(elapsedHours * 10) / 10) : Math.max(1, Math.round(elapsedHours / 24));
-    const cost = (bike.type === "Electric" && bike.rateType === "Hour")
+    const discount = rental.discount || 0;
+    const cost = Math.max(0, ((bike.type === "Electric" && bike.rateType === "Hour")
         ? calculateElectricCost(unitsElapsed)
-        : unitsElapsed * bike.rate;
+        : unitsElapsed * bike.rate) - discount);
 
     // Update Rental Log
     rental.endTime = endTime;
