@@ -1038,6 +1038,111 @@ if (altPhoneInput) {
     });
 }
 
+// ─── CUSTOMER DATABASE & AUTOCOMPLETE ───────────────────────────────
+// Load saved customers from localStorage
+function getCustomerDB() {
+    try {
+        return JSON.parse(localStorage.getItem("rentifly_customers") || "[]");
+    } catch { return []; }
+}
+
+// Save a customer to the database (updates if phone matches, else adds new)
+function saveCustomerToDB(customer) {
+    const customers = getCustomerDB();
+    const existingIdx = customers.findIndex(c => c.phone === customer.phone);
+    if (existingIdx >= 0) {
+        // Update existing customer with latest details
+        customers[existingIdx] = { ...customers[existingIdx], ...customer };
+    } else {
+        customers.push(customer);
+    }
+    localStorage.setItem("rentifly_customers", JSON.stringify(customers));
+    
+    // Also sync to Firebase if active
+    if (isFirebaseActive && db) {
+        db.ref("rentifly_customers").set(customers);
+    }
+}
+
+// Load customers from Firebase on startup
+function loadCustomersFromFirebase() {
+    if (isFirebaseActive && db) {
+        db.ref("rentifly_customers").on("value", (snapshot) => {
+            const data = snapshot.val();
+            if (data && Array.isArray(data)) {
+                localStorage.setItem("rentifly_customers", JSON.stringify(data));
+            }
+        });
+    }
+}
+loadCustomersFromFirebase();
+
+// Autocomplete UI
+const customerNameInput = document.getElementById("customer-name");
+const autocompleteBox = document.getElementById("customer-autocomplete");
+
+if (customerNameInput && autocompleteBox) {
+    customerNameInput.addEventListener("input", function() {
+        const query = this.value.trim().toLowerCase();
+        if (query.length < 1) {
+            autocompleteBox.style.display = "none";
+            return;
+        }
+
+        const customers = getCustomerDB();
+        const matches = customers.filter(c => 
+            c.name.toLowerCase().includes(query) || 
+            c.phone.includes(query)
+        ).slice(0, 8); // Show max 8 results
+
+        if (matches.length === 0) {
+            autocompleteBox.style.display = "none";
+            return;
+        }
+
+        autocompleteBox.innerHTML = matches.map((c, i) => `
+            <div data-idx="${i}" style="padding:12px 16px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.06); transition: background 0.15s;"
+                 onmouseover="this.style.background='rgba(0,242,254,0.08)'"
+                 onmouseout="this.style.background='transparent'">
+                <div style="font-weight:600; font-size:0.95rem; color:var(--text-primary);">${c.name}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                    📞 ${c.phone}${c.address ? ' · 📍 ' + c.address.substring(0, 30) + (c.address.length > 30 ? '...' : '') : ''}
+                </div>
+            </div>
+        `).join('');
+
+        autocompleteBox.style.display = "block";
+
+        // Click handler for each suggestion
+        autocompleteBox.querySelectorAll("[data-idx]").forEach(el => {
+            el.addEventListener("click", () => {
+                const idx = parseInt(el.getAttribute("data-idx"));
+                const customer = matches[idx];
+                fillCustomerForm(customer);
+                autocompleteBox.style.display = "none";
+            });
+        });
+    });
+
+    // Hide autocomplete when clicking outside
+    document.addEventListener("click", (e) => {
+        if (!autocompleteBox.contains(e.target) && e.target !== customerNameInput) {
+            autocompleteBox.style.display = "none";
+        }
+    });
+}
+
+// Fill all customer form fields from a saved customer object
+function fillCustomerForm(customer) {
+    document.getElementById("customer-name").value = customer.name || "";
+    document.getElementById("customer-phone").value = customer.phone || "";
+    document.getElementById("customer-alt-phone").value = customer.altPhone || "";
+    document.getElementById("customer-address").value = customer.address || "";
+    document.getElementById("customer-id-type").value = customer.idType || "";
+    document.getElementById("customer-id-number").value = customer.idNumber || "";
+}
+// ─── END CUSTOMER AUTOCOMPLETE ──────────────────────────────────────
+
 function startCamera() {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
         .then(stream => {
@@ -1234,6 +1339,16 @@ btnPaymentDone.addEventListener("click", () => {
         estDuration,
         status: "Active",
         actualCost: null
+    });
+
+    // Save customer details for future autocomplete
+    saveCustomerToDB({
+        name: customerName,
+        phone: customerPhone,
+        altPhone: customerAltPhone,
+        address: customerAddress,
+        idType: customerIdType,
+        idNumber: customerIdNumber
     });
 
     saveState();

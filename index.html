@@ -494,9 +494,10 @@
                         <p id="rent-bike-display-rate" style="font-size: 0.95rem; color: var(--color-primary); font-weight: 500;">--</p>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group" style="position: relative;">
                         <label for="customer-name">Customer Full Name</label>
-                        <input type="text" id="customer-name" class="form-control" placeholder="e.g., Jane Doe" required>
+                        <input type="text" id="customer-name" class="form-control" placeholder="Start typing to search..." required autocomplete="off">
+                        <div id="customer-autocomplete" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:10; background:#0f1524; border:1px solid var(--border-color); border-top:none; border-radius:0 0 10px 10px; max-height:180px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
                     </div>
                     <div class="form-group">
                         <label for="customer-phone">Contact Phone Number</label>
@@ -773,6 +774,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
 </body>
 </html>
