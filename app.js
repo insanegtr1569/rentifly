@@ -247,7 +247,14 @@ function saveState() {
     try {
         localStorage.setItem("rentifly_state", JSON.stringify(state));
         if (isFirebaseActive && db) {
-            db.ref("rentifly_state").set(state);
+            db.ref("rentifly_state").set(state).catch(err => {
+                console.error("Firebase save error:", err);
+                if (err.message && err.message.includes("PERMISSION_DENIED")) {
+                    showToast("Firebase Permission Denied! Set Rules to true in Console.", "error");
+                } else {
+                    showToast("Cloud sync error: " + err.message, "error");
+                }
+            });
         }
     } catch (e) {
         console.error("Failed to save state:", e);
@@ -791,7 +798,7 @@ formBike.addEventListener("submit", (e) => {
     const name = document.getElementById("bike-name").value;
     const type = document.getElementById("bike-type").value;
     const sn = document.getElementById("bike-sn").value;
-    const rate = parseFloat(document.getElementById("bike-rate").value);
+    const rate = parseFloat(document.getElementById("bike-rate").value) || 0;
     const rateType = document.getElementById("bike-rate-type").value;
     const status = document.getElementById("bike-status").value;
 
@@ -812,9 +819,21 @@ formBike.addEventListener("submit", (e) => {
     saveState();
     closeBikeModal();
     
-    // Refresh current view
-    const activeTab = document.querySelector(".menu-list .menu-item.active").getAttribute("data-target");
-    renderActiveView(activeTab);
+    // Clear search and dropdown filters so newly added bike is not hidden
+    const searchInput = document.getElementById("search-inventory");
+    const filterType = document.getElementById("filter-type");
+    const filterStatus = document.getElementById("filter-status");
+    if (searchInput) searchInput.value = "";
+    if (filterType) filterType.value = "all";
+    if (filterStatus) filterStatus.value = "all";
+
+    // Switch to inventory tab and render
+    const inventoryTab = document.querySelector(".menu-list [data-target='inventory']");
+    if (inventoryTab) {
+        inventoryTab.click();
+    } else {
+        renderActiveView("inventory");
+    }
 });
 
 // DELETE BIKE
