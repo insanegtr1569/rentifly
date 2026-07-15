@@ -546,6 +546,28 @@
         </div>
     </div>
 
+    <!-- MODAL: PAYMENT QR -->
+    <div class="modal-overlay" id="modal-payment-qr">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h3>Payment Required</h3>
+                <button class="modal-close" id="modal-payment-qr-close">&times;</button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Please scan the QR code to complete the payment for this rental.</p>
+                <div style="background: white; padding: 16px; border-radius: 12px; display: inline-block;">
+                    <img src="paytm_qr.jpg" alt="PayTM QR" style="max-width: 250px; width: 100%; height: auto; border-radius: 8px;">
+                </div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-success); margin-top: 8px;">
+                    Amount to Pay: <span id="payment-qr-amount">₹0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button type="button" class="btn btn-success" id="btn-payment-done" style="width: 100%; box-shadow: var(--glow-success);">Payment Done & Rent</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: RETURN BIKE -->
     <div class="modal-overlay" id="modal-return">
         <div class="modal-content">
@@ -724,6 +746,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
 </body>
 </html>

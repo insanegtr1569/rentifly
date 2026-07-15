@@ -1162,8 +1162,35 @@ const closeRentModal = () => {
 document.getElementById("modal-rent-close").addEventListener("click", closeRentModal);
 document.getElementById("modal-rent-cancel").addEventListener("click", closeRentModal);
 
+const modalPaymentQr = document.getElementById("modal-payment-qr");
+const paymentQrAmount = document.getElementById("payment-qr-amount");
+const btnPaymentDone = document.getElementById("btn-payment-done");
+const btnPaymentQrClose = document.getElementById("modal-payment-qr-close");
+
+const closePaymentQrModal = () => {
+    modalPaymentQr.classList.remove("active");
+};
+btnPaymentQrClose.addEventListener("click", closePaymentQrModal);
+
 formRent.addEventListener("submit", (e) => {
     e.preventDefault();
+    const bikeId = document.getElementById("rent-bike-id").value;
+    const bike = state.bikes.find(b => b.id === bikeId);
+    if (!bike || bike.status !== "Available") {
+        showToast("Error renting bike.", "error");
+        return;
+    }
+    
+    // Transfer estimated cost to QR modal
+    const estCost = document.getElementById("rent-estimated-cost").innerText;
+    paymentQrAmount.innerText = estCost;
+    
+    // Switch modals
+    closeRentModal();
+    modalPaymentQr.classList.add("active");
+});
+
+btnPaymentDone.addEventListener("click", () => {
     const bikeId = document.getElementById("rent-bike-id").value;
     const customerName = document.getElementById("customer-name").value;
     const customerPhone = document.getElementById("customer-phone").value;
@@ -1171,7 +1198,8 @@ formRent.addEventListener("submit", (e) => {
 
     const bike = state.bikes.find(b => b.id === bikeId);
     if (!bike || bike.status !== "Available") {
-        showToast("Error renting bike.", "error");
+        showToast("Error processing rental.", "error");
+        closePaymentQrModal();
         return;
     }
 
@@ -1194,10 +1222,10 @@ formRent.addEventListener("submit", (e) => {
     });
 
     saveState();
-    closeRentModal();
-    showToast("Rental process started!");
+    closePaymentQrModal();
+    showToast("Rental payment & process completed!");
     
-    // Redirect / refresh to Active Rentals screen or Dashboard
+    // Refresh Dashboard
     document.querySelector(".menu-list [data-target='dashboard']").click();
 });
 
