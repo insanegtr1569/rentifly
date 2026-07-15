@@ -1554,36 +1554,12 @@ document.getElementById("modal-earnings-ok").addEventListener("click", closeEarn
 window.addEventListener("DOMContentLoaded", () => {
     checkAuth();
     
-    // Chrome-compatible mobile scroll lock for modals
-    let scrollY = 0;
+    // Simple body scroll lock via class toggle
     const modals = document.querySelectorAll('.modal-overlay');
-    
-    function lockBodyScroll() {
-        scrollY = window.scrollY;
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.left = '0';
-        document.body.style.right = '0';
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function unlockBodyScroll() {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.overflow = '';
-        window.scrollTo(0, scrollY);
-    }
-    
     if (modals.length > 0) {
         const observer = new MutationObserver(() => {
             const isAnyModalOpen = Array.from(modals).some(m => m.classList.contains('active'));
-            if (isAnyModalOpen) {
-                lockBodyScroll();
-            } else {
-                unlockBodyScroll();
-            }
+            document.body.classList.toggle('modal-open', isAnyModalOpen);
         });
         modals.forEach(m => {
             observer.observe(m, { attributes: true, attributeFilter: ['class'] });
