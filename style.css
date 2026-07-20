@@ -79,10 +79,10 @@ body {
 /* Sidebar Styling */
 aside {
     width: var(--sidebar-width);
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     border-right: 1px solid var(--border-color);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -92,6 +92,7 @@ aside {
     z-index: 100;
     transition: width var(--transition-speed) ease;
     box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4);
+    transform: translateZ(0);
 }
 
 .brand {
@@ -995,6 +996,8 @@ tr:hover td {
         padding: 0 0 80px 0 !important;
         overflow-x: hidden;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        transform: translateZ(0);
     }
 
     /* ── MOBILE TOP BAR ── */
@@ -1009,10 +1012,11 @@ tr:hover td {
         align-items: center;
         padding: 14px 20px;
         background: rgba(0, 0, 0, 0.96);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        transform: translateZ(0);
     }
 
     /* Sign-out button in top bar */
@@ -1137,11 +1141,52 @@ tr:hover td {
         border-radius: 18px;
     }
 
-    /* ── DASHBOARD INNER GRID ── */
+    /* ── DASHBOARD PANELS & SCROLLABILITY ON MOBILE ── */
     .dashboard-grid {
         grid-template-columns: 1fr !important;
         gap: 16px;
         padding: 0 16px 16px 16px;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-panel {
+        padding: 16px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border-radius: 16px !important;
+        overflow: hidden;
+    }
+
+    /* Availability Forecast horizontal swipe carousel on mobile */
+    #dashboard-forecast-list {
+        display: flex !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 12px !important;
+        padding: 4px 2px 12px 2px !important;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 242, 254, 0.3) transparent;
+    }
+
+    #dashboard-forecast-list::-webkit-scrollbar {
+        height: 4px;
+    }
+    #dashboard-forecast-list::-webkit-scrollbar-thumb {
+        background: rgba(0, 242, 254, 0.3);
+        border-radius: 4px;
+    }
+
+    #dashboard-forecast-list > * {
+        flex: 0 0 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
+        scroll-snap-align: start;
     }
 
     /* ── MOBILE BOTTOM NAVIGATION BAR ── */
@@ -1153,8 +1198,8 @@ tr:hover td {
         width: 100vw;
         height: 68px;
         background: rgba(0, 0, 0, 0.97);
-        backdrop-filter: blur(28px);
-        -webkit-backdrop-filter: blur(28px);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border-top: 1px solid rgba(255, 255, 255, 0.09);
         z-index: 9999;
         justify-content: space-around;
@@ -1172,14 +1217,14 @@ tr:hover td {
         justify-content: center;
         gap: 3px;
         color: rgba(148, 163, 184, 0.7);
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         font-weight: 600;
         cursor: pointer;
-        padding: 6px 10px;
+        padding: 4px 4px;
         border-radius: 10px;
         transition: color 0.2s ease;
-        min-width: 56px;
-        letter-spacing: 0.3px;
+        min-width: 46px;
+        letter-spacing: 0.2px;
         text-transform: uppercase;
     }
 
