@@ -326,7 +326,7 @@ function showPricingTable() {
     const overlay = document.createElement("div");
     overlay.style = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;";
     overlay.innerHTML = `
-        <div style="background:#0f1524;border:1px solid rgba(242,186,0,0.3);border-radius:20px;padding:28px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+        <div style="background:#000000;border:1px solid rgba(242,186,0,0.3);border-radius:20px;padding:28px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <div>
                     <h3 style="font-size:1.25rem;font-weight:700;color:#f2ba00;">⚡ Electric Scooter Pricing</h3>
@@ -475,13 +475,18 @@ function updateStats() {
     // Fleet utilization rate
     const utilizationRate = totalFleet > 0 ? Math.round((activeRentals / totalFleet) * 100) : 0;
 
-    // Push into DOM
-    document.getElementById("stat-total-fleet").innerText = totalFleet;
-    document.getElementById("stat-active-rentals").innerText = activeRentals;
-    document.getElementById("stat-available-bikes").innerText = availableBikes;
-    document.getElementById("stat-total-revenue").innerText = `₹${totalRevenue.toFixed(2)}`;
-    document.getElementById("badge-maintenance-count").innerText = maintenanceBikes;
-    document.getElementById("utilization-rate").innerText = `${utilizationRate}%`;
+    const statTotalFleet = document.getElementById("stat-total-fleet");
+    if (statTotalFleet) statTotalFleet.innerText = totalFleet;
+    const statActiveRentals = document.getElementById("stat-active-rentals");
+    if (statActiveRentals) statActiveRentals.innerText = activeRentals;
+    const statAvailableBikes = document.getElementById("stat-available-bikes");
+    if (statAvailableBikes) statAvailableBikes.innerText = availableBikes;
+    const statTotalRev = document.getElementById("stat-total-revenue");
+    if (statTotalRev) statTotalRev.innerText = `₹${totalRevenue.toFixed(2)}`;
+    const badgeMaint = document.getElementById("badge-maintenance-count");
+    if (badgeMaint) badgeMaint.innerText = maintenanceBikes;
+    const utilRate = document.getElementById("utilization-rate");
+    if (utilRate) utilRate.innerText = `${utilizationRate}%`;
 }
 
 // RENDER: DASHBOARD
@@ -1038,9 +1043,12 @@ document.getElementById("search-rentals").addEventListener("input", renderRental
 document.getElementById("search-history").addEventListener("input", renderHistory);
 
 // quick buttons on Dashboard
-document.getElementById("btn-add-bike-quick").addEventListener("click", () => openAddBikeModal());
-document.getElementById("btn-add-bike-top").addEventListener("click", () => openAddBikeModal());
-document.getElementById("btn-view-inventory").addEventListener("click", () => {
+const btnAddBikeQuick = document.getElementById("btn-add-bike-quick");
+if (btnAddBikeQuick) btnAddBikeQuick.addEventListener("click", () => openAddBikeModal());
+const btnAddBikeTop = document.getElementById("btn-add-bike-top");
+if (btnAddBikeTop) btnAddBikeTop.addEventListener("click", () => openAddBikeModal());
+const btnViewInv = document.getElementById("btn-view-inventory");
+if (btnViewInv) btnViewInv.addEventListener("click", () => {
     document.querySelector(".menu-list [data-target='inventory']").click();
 });
 
@@ -1436,9 +1444,14 @@ function openRentModal(bikeId) {
     document.getElementById("rent-duration-unit").value = bike.rateType;
     document.getElementById("rent-estimated-cost").innerText = "₹0.00";
     
-    // Reset age and discount
+    // Reset age, discount, and set start time to current time
     document.getElementById("customer-age").value = "";
     document.getElementById("rent-discount").value = "0";
+    
+    const nowLocal = new Date();
+    nowLocal.setMinutes(nowLocal.getMinutes() - nowLocal.getTimezoneOffset());
+    const startTimeEl = document.getElementById("rent-start-time");
+    if (startTimeEl) startTimeEl.value = nowLocal.toISOString().slice(0, 16);
     
     resetCameraUI();
 
@@ -1513,6 +1526,10 @@ btnPaymentDone.addEventListener("click", () => {
     const discount = parseFloat(document.getElementById("rent-discount").value) || 0;
     const estDuration = parseInt(document.getElementById("rent-duration").value);
 
+    const startTimeInput = document.getElementById("rent-start-time");
+    const startTimeVal = startTimeInput ? startTimeInput.value : "";
+    const startTime = startTimeVal ? new Date(startTimeVal).getTime() : Date.now();
+
     const bike = state.bikes.find(b => b.id === bikeId);
     if (!bike || bike.status !== "Available") {
         showToast("Error processing rental.", "error");
@@ -1537,7 +1554,7 @@ btnPaymentDone.addEventListener("click", () => {
         customerPhoto: capturedPhotoData,
         customerAge,
         discount,
-        startTime: Date.now(),
+        startTime,
         endTime: null,
         estDuration,
         status: "Active",

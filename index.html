@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rentifly // Premium Bike Rental & Inventory Dashboard</title>
-    <link rel="stylesheet" href="style.css?v=16">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 
     <!-- LOGIN OVERLAY -->
-    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 9999; background: var(--bg-dark); background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(177, 84, 252, 0.08) 0%, transparent 40%);">
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 9999; background: #000000;">
         <div class="login-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 40px; width: 90%; max-width: 420px; box-shadow: var(--shadow-card); backdrop-filter: blur(20px); text-align: center;">
             <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 28px;">
                 <div style="width: 70px; height: 50px;">
@@ -192,16 +195,15 @@
 
         <!-- STATS GRID -->
         <section class="stats-grid">
-            <div class="stat-card total">
+            <div class="stat-card available">
                 <div class="stat-info">
-                    <h3>Total Fleet</h3>
-                    <div class="stat-value" id="stat-total-fleet">0</div>
+                    <h3>Available Now</h3>
+                    <div class="stat-value" id="stat-available-bikes">0</div>
                 </div>
                 <div class="stat-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="5.5" cy="17.5" r="2.5"/>
-                        <circle cx="18.5" cy="17.5" r="2.5"/>
-                        <path d="M15 17.5 11.5 12h-4L5.5 17.5M11.5 12h4.5l2.5 5.5M12 12V7.5L9 5M12 7.5h4"/>
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
                     </svg>
                 </div>
             </div>
@@ -215,30 +217,6 @@
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
                         <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="stat-card available">
-                <div class="stat-info">
-                    <h3>Available Now</h3>
-                    <div class="stat-value" id="stat-available-bikes">0</div>
-                </div>
-                <div class="stat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22 4 12 14.01 9 11.01"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="stat-card revenue" id="card-revenue" style="cursor: pointer;" title="Click to view earnings breakdown">
-                <div class="stat-info">
-                    <h3>Total Earnings</h3>
-                    <div class="stat-value" id="stat-total-revenue">₹0.00</div>
-                </div>
-                <div class="stat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                 </div>
             </div>
@@ -274,40 +252,13 @@
                     </div>
                 </div>
                 <!-- Availability Forecast Panel -->
-                <div class="dashboard-panel" style="margin-top: 24px;">
+                <div class="dashboard-panel">
                     <div class="panel-header">
                         <h2>Availability Forecast</h2>
                         <span class="pulse-badge" style="background: rgba(0, 242, 254, 0.1); color: var(--color-primary); font-weight: 500; font-size: 0.85rem;">Availability Schedule</span>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;" id="dashboard-forecast-list">
                         <!-- Dynamic Forecast Cards will be populated here -->
-                    </div>
-                </div>
-
-                <!-- Right panel: Fleet Status Summary & Quick Add -->
-                <div class="dashboard-panel" style="display: flex; flex-direction: column; gap: 24px;">
-                    <div>
-                        <div class="panel-header">
-                            <h2>Fleet Overview</h2>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                                <span style="color: var(--text-secondary); font-size: 0.95rem;">Maintenance Required</span>
-                                <span class="badge" id="badge-maintenance-count" style="background: rgba(251, 173, 80, 0.15); color: var(--color-warning); padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.85rem;">0</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: var(--text-secondary); font-size: 0.95rem;">Utilization Rate</span>
-                                <span id="utilization-rate" style="font-weight: 700; color: var(--color-primary); font-size: 1.1rem;">0%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: auto; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                        <h3 style="font-size: 1.05rem; font-weight: 600; margin-bottom: 16px;">Quick Actions</h3>
-                        <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
-                            <button class="btn btn-primary" id="btn-add-bike-quick">Add New Bike</button>
-                            <button class="btn btn-secondary" id="btn-view-inventory">Go to Inventory</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -573,7 +524,7 @@
                     <div class="form-group" style="position: relative;">
                         <label for="customer-name">Customer Full Name</label>
                         <input type="text" id="customer-name" class="form-control" placeholder="Start typing to search..." required autocomplete="off">
-                        <div id="customer-autocomplete" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:10; background:#0f1524; border:1px solid var(--border-color); border-top:none; border-radius:0 0 10px 10px; max-height:180px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
+                        <div id="customer-autocomplete" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:10; background:#000000; border:1px solid var(--border-color); border-top:none; border-radius:0 0 10px 10px; max-height:180px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
                     </div>
                     <div class="form-group">
                         <label for="customer-phone">Contact Phone Number</label>
@@ -636,6 +587,11 @@
                         </div>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="rent-start-time">Start Time</label>
+                        <input type="datetime-local" id="rent-start-time" class="form-control" required>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="rent-duration">Est. Duration</label>
@@ -860,6 +816,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <script src="app.js?v=24"></script>
+    <script src="app.js?v=31"></script>
 </body>
 </html>
